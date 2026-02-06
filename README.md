@@ -1,45 +1,45 @@
 # 📦 Parcel Intel — Enterprise Logistics Intelligence
 
-![Next.js](https://img.shields.io/badge/Frontend-Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white)
-![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue?style=for-the-badge&logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Design-Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Node.js](https://img.shields.io/badge/API-Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![Express.js](https://img.shields.io/badge/Framework-Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
-![Python](https://img.shields.io/badge/Worker-Python_3.10-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![Playwright](https://img.shields.io/badge/Automation-Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
-![Redis](https://img.shields.io/badge/Queue-Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
-
 > **A high-accuracy shipment tracking platform featuring an event-driven microservices architecture.**
 
 ---
 
 ## 📊 Dashboard Screenshot
 
-<img width="1910" height="914" alt="screencapture-localhost-3000-2026-02-06-22_18_45" src="https://github.com/user-attachments/assets/d19e25c3-aafa-4227-a1b7-82b7d77bfa8a" />
+<img width="1910" height="914" alt="Parcel Intel Dashboard" src="[https://github.com/user-attachments/assets/d19e25c3-aafa-4227-a1b7-82b7d77bfa8a](https://github.com/user-attachments/assets/d19e25c3-aafa-4227-a1b7-82b7d77bfa8a)" />
 
 ---
 
 ## 🧠 Overview
 
-**Parcel Intel** is designed to replace resource-intensive scraping tools from the user interface by utilizing a **Write-Ahead Log (WAL) pattern** with **PostgreSQL**, and a **Redis Job Queue**. The system ensures low-latency UI interactions while handling complex, long-running backend tasks.
+**Parcel Intel** is designed to offload resource-intensive scraping tasks from the user interface by utilizing a **Write-Ahead Log (WAL) pattern** with **PostgreSQL**, and a **Redis Job Queue**. The system ensures zero-latency UI interactions while handling complex, long-running backend operations.
 
-The frontend is built using **Next.js 14**, featuring a custom *glassmorphism* design system that provides a fluid app-like experience.
+The frontend is built using **Next.js 14**, featuring a custom **Glassmorphism** design system that delivers a fluid, app-like experience.
 
 ---
 
 ## 🏗️ System Architecture
 
-The system uses an asynchronous Worker Pattern to handle scraping tasks without blocking the API.
+The system employs an **Asynchronous Worker Pattern** to process scraping tasks without blocking the main API.
 
 ```
 (Client Click) → POST /track
-    → API Gateway (Next.js)
-        → Post Job → Redis Queue (BullMQ)
-            → Worker Service (Background)
-                → Scraper → External Logistics Providers
-                → Publish Status → DB
-        → Client Polling → /status
+    │
+    ▼
+API Gateway (Next.js/Express)
+    │
+    ├─► Enqueue Job ──► Redis Queue
+    │                   │
+    │                   ▼
+    │             Worker Service (Python)
+    │                   │
+    │                   ├─► Scraper ──► External Logistics Providers
+    │                   │
+    │                   └─► Publish Status ──► PostgreSQL DB
+    │
+    ▼
+Client Polling ◄── GET /status
+
 ```
 
 ---
@@ -47,26 +47,30 @@ The system uses an asynchronous Worker Pattern to handle scraping tasks without 
 ## ⚙️ Core Technologies
 
 ### 🖥️ Frontend
-- Next.js 14 (App Router)
-- Tailwind CSS
-- Glassmorphism UI System
-- Server Actions
+
+* **Next.js 14** (App Router)
+* **Tailwind CSS** (Utility-first styling)
+* **Glassmorphism UI System** (Custom visual language)
+* **Server Actions** (Secure data fetching)
 
 ### 🧩 Backend
-- Node.js
-- Express / Next API Routes
-- BullMQ (Redis Queue)
-- PostgreSQL (Event Storage + Tracking Data)
+
+* **Node.js** (Runtime environment)
+* **Express / API Routes** (Request handling)
+* **Redis Queue** (Task management)
+* **PostgreSQL** (Event storage & tracking data)
 
 ### 🧰 DevOps
-- Docker & Docker Compose
-- Environment-based Config
+
+* **Docker & Docker Compose** (Containerization)
+* **Environment-based Config** (Security & flexibility)
 
 ---
 
 ## 🗄️ Database Design
 
-### Event Table (Event Sourcing / WAL Pattern)
+### Shipment Table (Snapshot State)
+
 ```sql
 CREATE TABLE shipments (
     id UUID PRIMARY KEY,
@@ -74,9 +78,11 @@ CREATE TABLE shipments (
     last_update TIMESTAMP,
     payload JSONB
 );
+
 ```
 
-### WAL Event Log
+### Event Log (WAL Pattern)
+
 ```sql
 CREATE TABLE events (
     id UUID PRIMARY KEY,
@@ -85,70 +91,77 @@ CREATE TABLE events (
     payload JSONB,
     created_at TIMESTAMP DEFAULT NOW()
 );
+
 ```
 
 ---
 
 ## 🔄 Worker Service Flow
 
-1. API receives tracking request
-2. API pushes job to Redis queue
-3. Worker picks job asynchronously
-4. Worker scrapes logistics provider APIs
-5. Worker writes results to PostgreSQL
-6. Client polls status endpoint for updates
+1. **Receive:** API accepts tracking request and pushes job to Redis.
+2. **Process:** Worker asynchronously dequeues the job.
+3. **Scrape:** Worker initiates Playwright to scrape external carrier APIs.
+4. **Persist:** Results are committed to the PostgreSQL database.
+5. **Update:** Client polls the status endpoint to reflect real-time changes.
 
 ---
 
 ## 🔐 Key Features
 
 ### ✅ Non-Blocking UI
-Users get instant response while processing happens in background.
 
-### ✅ Event-Driven Tracking
-Every shipment update is stored as an immutable event.
+Immediate user feedback while heavy processing executes in the background.
+
+### ✅ Event-Driven Architecture
+
+Shipment updates are treated as discrete, immutable events.
 
 ### ✅ Horizontal Scalability
-Multiple workers can run simultaneously.
+
+Architecture supports multiple concurrent workers.
 
 ### ✅ Fault Tolerance
-Jobs retry automatically if scraping fails.
+
+Automatic retry mechanisms for failed scraping attempts.
 
 ---
 
 ## 🐳 Docker Setup
 
 ### 1️⃣ Clone Repository
+
 ```bash
-git clone <repo-url>
-cd parcel-intel-platform
+git clone https://github.com/subhaiml/parcel-track-intel.git
+cd parcel-track-intel
+
 ```
 
 ### 2️⃣ Start Services
+
 ```bash
 docker compose up -d
+
 ```
 
 ### 3️⃣ Verify Containers
+
 ```bash
 docker ps
+
 ```
 
-Expected services:
-- postgres
-- redis
-- api
-- worker
+*Expected output:* `postgres`, `redis`, `api`, `worker`
 
 ---
 
 ## 🔑 Environment Variables
 
-Create `.env` file:
+Create a `.env` file in the root directory:
 
-```
+```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/parcelintel
 REDIS_URL=redis://localhost:6379
+
 ```
 
 ---
@@ -156,70 +169,65 @@ REDIS_URL=redis://localhost:6379
 ## 📡 API Endpoints
 
 ### Track Shipment
-```
-POST /api/track
-```
 
-Body:
+**POST** `/api/track`
+
 ```json
 {
   "trackingNumber": "ABC123"
 }
-```
 
----
+```
 
 ### Get Shipment Status
-```
-GET /api/status/{trackingNumber}
-```
+
+**GET** `/api/status/{trackingNumber}`
 
 ---
 
 ## 🎨 UI Design System
 
-Parcel Intel uses a custom **Liquid Glass** design language:
+Parcel Intel utilizes a custom **Glass** design language:
 
-- Frosted translucent panels
-- Subtle gradient overlays
-- Soft shadow elevation
-- Apple-inspired motion physics
+* **Frosted Panels:** Translucent backgrounds with backdrop blur.
+* **Gradient Overlays:** Subtle, dynamic color meshes.
+* **Soft Elevation:** Diffused shadows for depth.
 
 ---
 
 ## 📈 Future Roadmap
 
-- AI-based delay prediction
-- Smart route optimization
-- Real-time push notifications
-- Carrier performance analytics
+* [ ] AI-based delivery delay prediction
+* [ ] Smart route optimization
+* [ ] Real-time push notifications (WebSockets)
+* [ ] Carrier performance analytics dashboard
 
 ---
 
 ## 🤝 Contributing
 
-1. Fork repository
-2. Create feature branch
-3. Commit changes
-4. Open Pull Request
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
 ## 📜 License
 
-MIT License
+Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
 
 ## ✨ Author
 
-**Subharthi Dutta**  
-BTech CSE (AI & ML)  
-Full Stack + Systems + Microservices Enthusiast
+**Subharthi Dutta** B.Tech CSE (AI & ML)
+
+*Full Stack + Systems + Microservices Enthusiast*
 
 ---
 
 ## 💡 Vision
 
-> Build enterprise-grade logistics intelligence platforms using modern distributed systems and beautiful UI experiences.
-
+> *Building enterprise-grade logistics intelligence platforms using modern distributed systems and beautiful UI experiences.*
