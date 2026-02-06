@@ -6,7 +6,7 @@
 
 ## 📊 Dashboard Screenshot
 
-<img width="1910" height="914" alt="Parcel Intel Dashboard" src="[https://github.com/user-attachments/assets/d19e25c3-aafa-4227-a1b7-82b7d77bfa8a](https://github.com/user-attachments/assets/d19e25c3-aafa-4227-a1b7-82b7d77bfa8a)" />
+<img width="1910" height="914" alt="screencapture-localhost-3000-2026-02-06-22_18_45" src="https://github.com/user-attachments/assets/f55f191a-4b98-4aac-bbac-aec303e36007" />
 
 ---
 
