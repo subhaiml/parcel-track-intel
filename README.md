@@ -24,7 +24,7 @@
 
 **Parcel Intel** is designed to replace resource-intensive scraping tools from the user interface by utilizing a **Write-Ahead Log (WAL) pattern** with **PostgreSQL**, and a **Redis Job Queue**. The system ensures low-latency UI interactions while handling complex, long-running backend tasks.
 
-The frontend is built using **Next.js 14**, featuring a custom *Apple-style glassmorphism* design system that provides a fluid app-like experience.
+The frontend is built using **Next.js 14**, featuring a custom *glassmorphism* design system that provides a fluid app-like experience.
 
 ---
 
