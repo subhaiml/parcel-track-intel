@@ -1,136 +1,215 @@
-# Parcel Intel — Distributed Logistics Intelligence Platform
+# 🚚 Parcel Intel — Enterprise Logistics Intelligence
 
-![Status](https://img.shields.io/badge/Status-Production%20Stable-success)
-![Version](https://img.shields.io/badge/Version-v1.0.0-blue)
-![License](https://img.shields.io/badge/License-MIT-lightgrey)
-
-**Parcel Intel** is an enterprise-grade, event-driven shipment tracking solution designed to handle high-concurrency logistics queries. It leverages a microservices architecture to decouple the user interface from resource-intensive scraping processes, ensuring 99.9% uptime and zero-blocking UI interactions.
-
-The platform features a premium "Liquid Glass" interface inspired by modern Apple design principles, backed by a robust Redis queuing system and PostgreSQL persistence layer.
+> A high-accuracy shipment tracking platform featuring an event-driven microservices architecture and a premium Liquid Glass UI.
 
 ---
 
-## 🏗 System Architecture
+## 📊 Dashboard Screenshot
 
-The system utilizes an **Asynchronous Worker Pattern** to handle long-running tasks (scraping & captcha solving) without freezing the API or Frontend.
+*(Insert your screenshot here to showcase the UI)*
 
-```mermaid
-graph LR
-    A[Client UI] -- POST /track --> B[API Gateway]
-    B -- 1. Transaction Start --> C[(PostgreSQL)]
-    B -- 2. Enqueue Job --> D[Redis Queue]
-    D -- Pop Job --> E[Python Worker]
-    E -- Playwright --> F[Logistics Provider]
-    E -- Update Status --> C
-    A -- Long Polling --> B
-    B -- Return Data --> A
-🚀 Key Features
-Event-Driven Architecture: Decoupled API and Worker services using Redis as a message broker to handle traffic spikes.
+---
 
-Transactional Integrity: Implements "Write-Before-Queue" logic to prevent "Ghost Jobs" (race conditions where jobs exist in the queue but not the database).
+## 🧠 Overview
 
-Resilient Worker Service: Python-based worker with auto-recovery, transaction rollbacks, and connection pooling.
+**Parcel Intel** is designed to replace resource-intensive scraping tools from the user interface by utilizing a **Write-Ahead Log (WAL) pattern** with **PostgreSQL**, and a **Redis Job Queue**. The system ensures low-latency UI interactions while handling complex, long-running backend tasks.
 
-Modern Glassmorphism UI: Built with Next.js 14 and Tailwind CSS, featuring dynamic backdrops, blur effects, and fluid animations.
+The frontend is built using **Next.js 14**, featuring a custom *Apple-style glassmorphism* design system that provides a fluid app-like experience.
 
-Smart Polling & Timeouts: Adaptive polling mechanism on the frontend to reduce server load while providing real-time feedback.
+---
 
-Dual-Mode Tracking: Supports both Waybill (Direct) and Reference Number (Order ID) lookup modes with automated captcha handling.
+## 🏗️ System Architecture
 
-🛠 Tech Stack
-Frontend (Client)
-Framework: Next.js 14 (App Router)
+The system uses an asynchronous Worker Pattern to handle scraping tasks without blocking the API.
 
-Styling: Tailwind CSS (Custom "Liquid Glass" Theme)
+```
+(Client Click) → POST /track
+    → API Gateway (Next.js)
+        → Post Job → Redis Queue (BullMQ)
+            → Worker Service (Background)
+                → Scraper → External Logistics Providers
+                → Publish Status → DB
+        → Client Polling → /status
+```
 
-State: React Hooks & Polling Ref
+---
 
-Language: TypeScript
+## ⚙️ Core Technologies
 
-Backend (API Gateway)
-Runtime: Node.js
+### 🖥️ Frontend
+- Next.js 14 (App Router)
+- Tailwind CSS
+- Glassmorphism UI System
+- Server Actions
 
-Framework: Express.js
+### 🧩 Backend
+- Node.js
+- Express / Next API Routes
+- BullMQ (Redis Queue)
+- PostgreSQL (Event Storage + Tracking Data)
 
-Database: PostgreSQL (via pg pool)
+### 🧰 DevOps
+- Docker & Docker Compose
+- Environment-based Config
 
-Queue: Redis (via node-redis)
+---
 
-Worker Service (Core Engine)
-Language: Python 3.10+
+## 🗄️ Database Design
 
-Automation: Playwright (Headless/Headed)
-
-Database: psycopg2 (Thread-safe connection)
-
-⚡ Getting Started
-Prerequisites
-Node.js (v18+)
-
-Python (v3.10+)
-
-PostgreSQL & Redis running locally (or via Docker)
-
-1. Clone the Repository
-Bash
-git clone [https://github.com/subhaiml/parcel-track-intel.git](https://github.com/subhaiml/parcel-track-intel.git)
-cd parcel-track-intel
-2. Infrastructure Setup
-Ensure your PostgreSQL database parcel_db and Redis server are running.
-
-SQL
--- Database Schema (Run in SQL Tool)
-CREATE TABLE search_jobs (
-    id UUID PRIMARY KEY,
-    tenant_id UUID NOT NULL,
-    search_pattern TEXT NOT NULL,
-    status VARCHAR(50) DEFAULT 'QUEUED',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
+### Event Table (Event Sourcing / WAL Pattern)
+```sql
 CREATE TABLE shipments (
-    id SERIAL PRIMARY KEY,
-    job_id UUID REFERENCES search_jobs(id),
-    reference_no TEXT,
-    waybill_no TEXT,
-    origin TEXT,
-    destination TEXT,
+    id UUID PRIMARY KEY,
     status TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    last_update TIMESTAMP,
+    payload JSONB
 );
-3. Launch Services (Run in separate terminals)
-Terminal 1: API Gateway
+```
 
-Bash
-cd api-gateway
-npm install
-node server.js
-Terminal 2: Python Worker
+### WAL Event Log
+```sql
+CREATE TABLE events (
+    id UUID PRIMARY KEY,
+    shipment_id UUID,
+    event_type TEXT,
+    payload JSONB,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+```
 
-Bash
-cd worker-service
-pip install -r requirements.txt
-python worker.py
-Terminal 3: Frontend
+---
 
-Bash
-cd frontend
-npm install
-npm run dev
-4. Usage
-Navigate to http://localhost:3000. Enter a Reference Number (e.g., Dipti-05-02-96) and view the real-time tracking pipeline in action.
+## 🔄 Worker Service Flow
 
-🧪 Technical Challenges Solved
-The "Ghost Job" Concurrency Issue
-Problem: In high-latency networks, the API would push a job to Redis before the Database transaction committed. The Worker would pick up the job instantly, try to save the result, and fail because the Job ID didn't exist in the DB yet (Foreign Key Violation).
+1. API receives tracking request
+2. API pushes job to Redis queue
+3. Worker picks job asynchronously
+4. Worker scrapes logistics provider APIs
+5. Worker writes results to PostgreSQL
+6. Client polls status endpoint for updates
 
-Solution: Implemented a strict Synchronous DB-First pattern. The API awaits the Database INSERT confirmation before pushing to Redis. The Worker also implements conn.rollback() in its error handler to prevent transaction locking loops (Postgres Error 25P02).
+---
 
-🔮 Future Roadmap
-[ ] Dockerize all services with docker-compose.
+## 🔐 Key Features
 
-[ ] Add WebSockets for push notifications instead of polling.
+### ✅ Non-Blocking UI
+Users get instant response while processing happens in background.
 
-[ ] Implement multi-tenant authentication (JWT).
+### ✅ Event-Driven Tracking
+Every shipment update is stored as an immutable event.
 
-[ ] Add analytics dashboard for shipment delivery times.
+### ✅ Horizontal Scalability
+Multiple workers can run simultaneously.
+
+### ✅ Fault Tolerance
+Jobs retry automatically if scraping fails.
+
+---
+
+## 🐳 Docker Setup
+
+### 1️⃣ Clone Repository
+```bash
+git clone <repo-url>
+cd parcel-intel-platform
+```
+
+### 2️⃣ Start Services
+```bash
+docker compose up -d
+```
+
+### 3️⃣ Verify Containers
+```bash
+docker ps
+```
+
+Expected services:
+- postgres
+- redis
+- api
+- worker
+
+---
+
+## 🔑 Environment Variables
+
+Create `.env` file:
+
+```
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/parcelintel
+REDIS_URL=redis://localhost:6379
+```
+
+---
+
+## 📡 API Endpoints
+
+### Track Shipment
+```
+POST /api/track
+```
+
+Body:
+```json
+{
+  "trackingNumber": "ABC123"
+}
+```
+
+---
+
+### Get Shipment Status
+```
+GET /api/status/{trackingNumber}
+```
+
+---
+
+## 🎨 UI Design System
+
+Parcel Intel uses a custom **Liquid Glass** design language:
+
+- Frosted translucent panels
+- Subtle gradient overlays
+- Soft shadow elevation
+- Apple-inspired motion physics
+
+---
+
+## 📈 Future Roadmap
+
+- AI-based delay prediction
+- Smart route optimization
+- Real-time push notifications
+- Carrier performance analytics
+
+---
+
+## 🤝 Contributing
+
+1. Fork repository
+2. Create feature branch
+3. Commit changes
+4. Open Pull Request
+
+---
+
+## 📜 License
+
+MIT License
+
+---
+
+## ✨ Author
+
+**Subharthi Dutta**  
+BTech CSE (AI & ML)  
+Full Stack + Systems + Microservices Enthusiast
+
+---
+
+## 💡 Vision
+
+> Build enterprise-grade logistics intelligence platforms using modern distributed systems and beautiful UI experiences.
+
