@@ -1,12 +1,22 @@
-# 🚚 Parcel Intel — Enterprise Logistics Intelligence
+# 📦 Parcel Intel — Enterprise Logistics Intelligence
 
-> A high-accuracy shipment tracking platform featuring an event-driven microservices architecture and a premium Liquid Glass UI.
+![Next.js](https://img.shields.io/badge/Frontend-Next.js_14-black?style=for-the-badge&logo=next.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Design-Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Node.js](https://img.shields.io/badge/API-Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Express.js](https://img.shields.io/badge/Framework-Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
+![Python](https://img.shields.io/badge/Worker-Python_3.10-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Playwright](https://img.shields.io/badge/Automation-Playwright-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Queue-Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+
+> **A high-accuracy shipment tracking platform featuring an event-driven microservices architecture.**
 
 ---
 
 ## 📊 Dashboard Screenshot
 
-*(Insert your screenshot here to showcase the UI)*
+<img width="1910" height="914" alt="screencapture-localhost-3000-2026-02-06-22_18_45" src="https://github.com/user-attachments/assets/d19e25c3-aafa-4227-a1b7-82b7d77bfa8a" />
 
 ---
 
